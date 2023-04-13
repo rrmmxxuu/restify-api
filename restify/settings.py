@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
+import io
+from urllib.parse import urlparse
 from pathlib import Path
 from google.oauth2 import service_account
 
@@ -137,7 +139,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'xuruimeng',
-        'HOST': 'localhost',
+        'HOST': '/cloudsql/restify-382711:northamerica-northeast2:restify-db',
         'PORT': '5432',
     }
 }
