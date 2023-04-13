@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  django:
+    image: restify:0.1
+    build: .
+    ports:
+      - "8000:8000"
+
+  cloudsqlproxy:
+    container_name: cloudsql-proxy
+    image: gcr.io/cloudsql-docker/gce-proxy:1.19.1
+    volumes:
+      - ./restify-382711-c7a7dac3a622.json:/secrets/cloudsql/restify-382711-c7a7dac3a622.json
+    ports:
+      - 127.0.0.1:5432:5432
+    command: /cloud_sql_proxy -instances="restify-382711:northamerica-northeast2:restify-db"=tcp:127.0.0.1:5432 -credential_file=/secrets/cloudsql/restify-382711-c7a7dac3a622.json
+    restart: always
