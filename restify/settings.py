@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 import io
+
 from urllib.parse import urlparse
 from pathlib import Path
 from google.oauth2 import service_account
+from google.cloud import storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,9 +38,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GOOGLE_APPLICATION_CREDENTIALS_JSON = './restify-382711-c7a7dac3a622.json'
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GOOGLE_APPLICATION_CREDENTIALS_JSON)
-GS_PROJECT_ID = 'restify-382711'
+# GOOGLE_APPLICATION_CREDENTIALS_JSON = './restify-382711-c7a7dac3a622.json'
+# GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GOOGLE_APPLICATION_CREDENTIALS_JSON)
+client = storage.Client()
+GS_PROJECT_ID = client.project
 GS_BUCKET_NAME = 'restify-storage'
 GS_FILE_OVERWRITE = True
 GS_QUERYSTRING_AUTH = False
