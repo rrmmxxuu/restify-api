@@ -94,13 +94,13 @@ class ReservationCreate(APIView):
                 serializer.save(tenant=tenant)
                 return Response(serializer.data)
             else:
-                return Response(serializer.errors)
+                return Response(serializer.errors, status=400)
         else:
             if serializer.is_valid():
                 serializer.save(tenant=tenant)
                 return Response(serializer.data)
             else:
-                return Response(serializer.errors)
+                return Response(serializer.errors, status=400)
 
 
 class ReservationUD(APIView):
@@ -177,4 +177,13 @@ class ReservationUD(APIView):
         return Response('Deletion successful', status=200)
 
 
+class ReservationGetMyView(APIView):
+    authentication_classes = (authentication.JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        tenant = request.user
+        reservation_queryset = Reservation.objects.filter(tenant=tenant)
+        serializer = ReservationSerializer(instance=reservation_queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=200)
 

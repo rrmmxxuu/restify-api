@@ -14,7 +14,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name']
+        fields = ['email', 'first_name', 'last_name', 'id']
 
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())],
