@@ -192,3 +192,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+
+# Use 'X-Forwarded-Proto' header for determining the scheme (http or https)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Set 'secure' flag on session cookies
+SESSION_COOKIE_SECURE = True
+
+# Set 'secure' flag on CSRF cookies
+CSRF_COOKIE_SECURE = True
