@@ -11,21 +11,44 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 import io
+import dj_database_url
 
 from urllib.parse import urlparse
 from pathlib import Path
 from google.oauth2 import service_account
 from google.cloud import storage
+from google.cloud import secretmanager
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
+def get_secret(project_id, secret_name):
+    client = secretmanager.SecretManagerServiceClient()
+    secret_version_name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = client.access_secret_version(request={"name": secret_version_name})
+    return response.payload.data.decode("utf-8")
+
+def parse_secret(secret_value):
+    lines = secret_value.split("\n")
+    env_vars = {}
+    for line in lines:
+        if line:
+            key, value = line.split("=", 1)
+            env_vars[key] = value
+    return env_vars
+
+PROJECT_ID = "your_project_id"
+SECRET_NAME = "django_settings"
+secret_value = get_secret(PROJECT_ID, SECRET_NAME)
+env_vars = parse_secret(secret_value)
+
+DATABASE_URL = env_vars["DATABASE_URL"]
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
+#SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
+SECRET_KEY = env_vars["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -38,11 +61,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-# GOOGLE_APPLICATION_CREDENTIALS_JSON = './restify-382711-c7a7dac3a622.json'
-# GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GOOGLE_APPLICATION_CREDENTIALS_JSON)
 client = storage.Client()
 GS_PROJECT_ID = client.project
-GS_BUCKET_NAME = 'restify-storage'
+GS_BUCKET_NAME = env_vars["GS_BUCKET_NAME"]
+#GS_BUCKET_NAME = 'restify-storage'
 GS_FILE_OVERWRITE = True
 GS_QUERYSTRING_AUTH = False
 
@@ -135,17 +157,18 @@ WSGI_APPLICATION = 'restify.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'xuruimeng',
-        'HOST': '/cloudsql/restify-382711:northamerica-northeast2:restify-db',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': 'xuruimeng',
+#         'HOST': '/cloudsql/restify-382711:northamerica-northeast2:restify-db',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation

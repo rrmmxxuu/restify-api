@@ -5,7 +5,9 @@ charset-normalizer==3.1.0
 coreapi==2.3.3
 coreschema==0.0.4
 Django==4.1.7
+dj-database-url==0.7.0
 django-cors-headers==3.14.0
+django-environ==0.10.0
 django-multiselectfield==0.1.12
 django-storages==1.13.2
 djangorestframework==3.14.0
@@ -15,6 +17,7 @@ drf-yasg==1.21.5
 google-api-core==2.11.0
 google-auth==2.17.1
 google-cloud-core==2.3.2
+google-cloud-secret-manager==2.16.1
 google-cloud-storage==2.8.0
 google-crc32c==1.5.0
 google-resumable-media==2.4.1
