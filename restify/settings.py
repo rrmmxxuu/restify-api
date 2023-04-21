@@ -32,7 +32,7 @@ def get_secret(project_id, secret_name):
     return response.payload.data.decode("utf-8")
 
 def parse_secret(secret_value):
-    lines = secret_value.split("\n")
+    lines = secret_value.strip().split("\n")
     env_vars = {}
     for line in lines:
         if line:
