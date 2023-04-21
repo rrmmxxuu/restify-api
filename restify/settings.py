@@ -108,8 +108,7 @@ MEDIA_URL = '/media/'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-DATABASE_URL = env("DATABASE_URL")
-DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
+DATABASES = {'default': env.db()}
 
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
