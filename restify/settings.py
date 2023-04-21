@@ -40,14 +40,12 @@ def parse_secret(secret_value):
             env_vars[key] = value
     return env_vars
 
-PROJECT_ID = "your_project_id"
+PROJECT_ID = "restify-382711"
 SECRET_NAME = "django_settings"
 secret_value = get_secret(PROJECT_ID, SECRET_NAME)
 env_vars = parse_secret(secret_value)
 
-DATABASE_URL = env_vars["DATABASE_URL"]
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
 SECRET_KEY = env_vars["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -157,19 +155,8 @@ WSGI_APPLICATION = 'restify.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+DATABASE_URL = env_vars["DATABASE_URL"]
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': 'xuruimeng',
-#         'HOST': '/cloudsql/restify-382711:northamerica-northeast2:restify-db',
-#         'PORT': '5432',
-#     }
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
