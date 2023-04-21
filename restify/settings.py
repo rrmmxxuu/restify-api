@@ -106,6 +106,11 @@ AUTH_USER_MODEL = 'accounts.User'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+DATABASE_URL = env("DATABASE_URL")
+DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
+
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
 GS_PROJECT_ID = client.project
@@ -199,11 +204,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'restify.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-DATABASE_URL = env("DATABASE_URL")
-DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
