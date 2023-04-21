@@ -105,8 +105,8 @@ MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
 GS_PROJECT_ID = client.project
-GS_BUCKET_NAME = env("GS_BUCKET_NAME")
-#GS_BUCKET_NAME = 'restify-storage'
+#GS_BUCKET_NAME = env("GS_BUCKET_NAME")
+GS_BUCKET_NAME = 'restify-storage'
 GS_FILE_OVERWRITE = True
 GS_QUERYSTRING_AUTH = False
 
