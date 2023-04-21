@@ -83,11 +83,15 @@ elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
+    print("Contents of the environment variables from Secret Manager:")
+    print(payload)
+
     env.read_env(io.StringIO(payload))
+
 else:
     raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
 
-SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
@@ -105,8 +109,7 @@ MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
 GS_PROJECT_ID = client.project
-#GS_BUCKET_NAME = env("GS_BUCKET_NAME")
-GS_BUCKET_NAME = 'restify-storage'
+GS_BUCKET_NAME = env("GS_BUCKET_NAME")
 GS_FILE_OVERWRITE = True
 GS_QUERYSTRING_AUTH = False
 
