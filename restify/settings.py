@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os.path
 import io
 import dj_database_url
+import environ
 
 from urllib.parse import urlparse
 from pathlib import Path
@@ -25,33 +26,49 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-def get_secret(project_id, secret_name):
+# def get_secret(project_id, secret_name):
+#     client = secretmanager.SecretManagerServiceClient()
+#     secret_version_name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+#     response = client.access_secret_version(request={"name": secret_version_name})
+#     return response.payload.data.decode("utf-8")
+
+# def parse_secret(secret_value):
+#     lines = secret_value.strip().split("\n")
+#     env_vars = {}
+#     for line in lines:
+#         if line:
+#             key, value = line.split("=", 1)
+#             env_vars[key] = value
+#     return env_vars
+
+# PROJECT_ID = "restify-382711"
+# SECRET_NAME = "django_settings"
+# secret_value = get_secret(PROJECT_ID, SECRET_NAME)
+# env_vars = parse_secret(secret_value)
+# secret_value = get_secret(project_id, secret_id, version_id)
+# print("Secret value:", secret_value)  # Add this line
+# env_vars = parse_secret(secret_value)
+# print("Parsed environment variables:", env_vars)  # Add this line
+
+env = environ.Env(DEBUG=(bool, True))
+
+def get_secret_value(project_id, secret_id, version_id="latest"):
     client = secretmanager.SecretManagerServiceClient()
-    secret_version_name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
-    response = client.access_secret_version(request={"name": secret_version_name})
-    return response.payload.data.decode("utf-8")
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(name=name)
+    return response.payload.data.decode("UTF-8")
 
-def parse_secret(secret_value):
-    lines = secret_value.strip().split("\n")
-    env_vars = {}
-    for line in lines:
-        if line:
-            key, value = line.split("=", 1)
-            env_vars[key] = value
-    return env_vars
+_, project_id = google.auth.default()
+secret_id = os.environ.get("SECRET_ID", "django_settings")
 
-PROJECT_ID = "restify-382711"
-SECRET_NAME = "django_settings"
-secret_value = get_secret(PROJECT_ID, SECRET_NAME)
-env_vars = parse_secret(secret_value)
-secret_value = get_secret(project_id, secret_id, version_id)
-print("Secret value:", secret_value)  # Add this line
-env_vars = parse_secret(secret_value)
-print("Parsed environment variables:", env_vars)  # Add this line
+secret_payload = get_secret_value(project_id, secret_id)
+env.read_env(io.StringIO(secret_payload))
+
+SECRET_KEY = env("SECRET_KEY")
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
+# SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -66,7 +83,7 @@ MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
 GS_PROJECT_ID = client.project
-GS_BUCKET_NAME = env_vars["GS_BUCKET_NAME"]
+GS_BUCKET_NAME = env("GS_BUCKET_NAME")
 #GS_BUCKET_NAME = 'restify-storage'
 GS_FILE_OVERWRITE = True
 GS_QUERYSTRING_AUTH = False
@@ -160,7 +177,7 @@ WSGI_APPLICATION = 'restify.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-DATABASE_URL = env_vars["DATABASE_URL"]
+DATABASE_URL = env("DATABASE_URL")
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
 # Password validation
