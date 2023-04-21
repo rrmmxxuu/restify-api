@@ -44,6 +44,11 @@ PROJECT_ID = "restify-382711"
 SECRET_NAME = "django_settings"
 secret_value = get_secret(PROJECT_ID, SECRET_NAME)
 env_vars = parse_secret(secret_value)
+secret_value = get_secret(project_id, secret_id, version_id)
+print("Secret value:", secret_value)  # Add this line
+env_vars = parse_secret(secret_value)
+print("Parsed environment variables:", env_vars)  # Add this line
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env_vars["SECRET_KEY"]
