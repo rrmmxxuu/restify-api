@@ -51,7 +51,7 @@ print("Parsed environment variables:", env_vars)  # Add this line
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env_vars["SECRET_KEY"]
+SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
