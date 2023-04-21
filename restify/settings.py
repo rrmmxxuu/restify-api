@@ -199,6 +199,16 @@ WSGI_APPLICATION = 'restify.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+if os.path.isfile(env_file):
+    with open(env_file, "r") as file:
+        env_contents = file.read()
+        print("Contents of the .env file:")
+        print(env_contents)
+    env.read_env(env_file)
+else:
+    print("The .env file is not found.")
+
+
 DATABASE_URL = env("DATABASE_URL")
 DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 
