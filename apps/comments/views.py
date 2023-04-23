@@ -1,3 +1,4 @@
+from django.http import HttpResponseBadRequest
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
@@ -100,7 +101,7 @@ class CommentCreate(APIView):
                     return Response(serializer.data)
 
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=400)
 
 
 class CommentUD(APIView):
@@ -120,19 +121,20 @@ class CommentUD(APIView):
         responses={
             '401': 'Unauthorized',
             '404': 'Comment Not Found',
-            '200': CommentSerializer
+            '200': 'CommentSerializer'
         }
     )
-    def put(self, request, comment_id):
-        user = request.user
+    def patch(self, request, comment_id):
         try:
             comment = Comments.objects.get(id=comment_id)
         except Comments.DoesNotExist:
             return Response({'detail': 'Comment not found.'}, status=404)
         # if comment exist, update it
-        serializer = CommentSerializer(instance=comment, data=request.data)
+        serializer = CommentSerializer(instance=comment, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(user=user, parent_comment=comment.parent_comment)
+            if request.user != comment.user:
+                return Response("not allowed to modify others comment", status=401)
+            serializer.save()
             return Response(serializer.data, status=200)
 
     @swagger_auto_schema(
@@ -189,6 +191,19 @@ class PropertyComments(APIView):
         return Response(serializer.data)
 
 
+class getOneComment(APIView):
+    permission_classes = (AllowAny,)
+    pk_url_kwarg = 'comment_id'
+
+    def get(self, request, comment_id):
+        try:
+            # Check if the property exists
+            comment = Comments.objects.get(id=comment_id)
+        except Comments.DoesNotExist:
+            # Return a 404 response if the property does not exist
+            return Response({'detail': 'Comment not found.'}, status=404)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
 
 
 

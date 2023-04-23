@@ -5,7 +5,8 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from rest_framework_simplejwt import authentication
 
-from django.db.models import Q
+from django.db.models import Q, FloatField, ExpressionWrapper
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 
 from drf_yasg import openapi
@@ -247,6 +248,7 @@ class PropertySearchView(APIView):
         amenities = request.GET.getlist('amenities', [])
         start_date = request.GET.get('start_date', None)
         end_date = request.GET.get('end_date', None)
+        sort_by = request.GET.get('sort_by', None)
 
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -263,11 +265,6 @@ class PropertySearchView(APIView):
                     or (start_date > obj.end_date and end_date > obj.end_date)):
                 conflict_properties.append(obj.property_id)
 
-        # reserved_properties_queryset = Reservation.objects.filter(
-        #     (Q(status='Approved') | Q(status='Pending')),
-        #     date_range__overlap=DateRange(start_date, end_date)
-        # )
-
         property_queryset = Property.objects.exclude(property_id__in=conflict_properties)
 
         if province:
@@ -281,6 +278,25 @@ class PropertySearchView(APIView):
         if amenities:
             for amenity in amenities:
                 property_queryset = property_queryset.filter(amenities__icontains=amenity)
+
+        if sort_by == 'price_low2high':
+            property_queryset = property_queryset.order_by('price')
+        elif sort_by == 'price_high2low':
+            property_queryset = property_queryset.order_by('-price')
+        elif sort_by == 'rate_high2low':
+            property_queryset = property_queryset.annotate(
+                rating_or_zero=ExpressionWrapper(
+                    Coalesce('rating', 0),
+                    output_field=FloatField()
+                )
+            ).order_by('-rating_or_zero')
+        else:
+            property_queryset = property_queryset.annotate(
+                rating_or_zero=ExpressionWrapper(
+                    Coalesce('rating', 0),
+                    output_field=FloatField()
+                )
+            ).order_by('-rating_or_zero')
 
         paginator = LimitOffsetPagination()
         paginated_queryset = paginator.paginate_queryset(property_queryset, request)

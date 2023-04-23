@@ -125,7 +125,7 @@ class ReservationUD(APIView):
         }
     )
     def put(self, request, reservation_id):
-        tenant = request.user
+
         try:
             reservation = Reservation.objects.get(id=reservation_id)
         except Reservation.DoesNotExist:
@@ -148,6 +148,7 @@ class ReservationUD(APIView):
             if conflicting_reservations.exists():
                 return Response({'detail': 'There is a conflicting reservation for the this property.'},
                                 status=400)
+            tenant = reservation.tenant
             serializer.save(tenant=tenant)
             return Response(serializer.data, status=200)
         else:
@@ -169,11 +170,11 @@ class ReservationUD(APIView):
     def delete(self, request, reservation_id):
         tenant = request.user
         try:
-            comment = Reservation.objects.get(id=reservation_id)
+            reservation = Reservation.objects.get(id=reservation_id)
         except Reservation.DoesNotExist:
             return Response({'detail': 'reservation not found.'}, status=404)
         # if comment exist, delete it
-        comment.delete()
+        reservation.delete()
         return Response('Deletion successful', status=200)
 
 

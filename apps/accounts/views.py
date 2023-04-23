@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from .models import UserProfile
+from .models import UserProfile, User
 from .serializers import UserSerializer, UserRegisterSerializer, UserChangePasswordSerializer, UserProfileSerializer
 
 import time
@@ -175,3 +175,23 @@ class UserProfileView(APIView):
         return Response(serializer.errors, status=400)
 
 
+class UserInfoPublicView(APIView):
+    permission_classes = (AllowAny,)
+    pk_url_kwarg = 'user_id'
+    def get(self, request, user_id):
+        queryset = User.objects.filter(id=user_id)
+        user = get_object_or_404(queryset)
+        serializer = UserSerializer(instance=user, many=False)
+
+        return Response(serializer.data, status=200)
+
+class UserProfilePublicView(APIView):
+    permission_classes = (AllowAny,)
+    pk_url_kwarg = 'user_id'
+
+    def get(self, request, user_id):
+        queryset = UserProfile.objects.filter(user_id=user_id)
+        user_profile = get_object_or_404(queryset)
+        serializer = UserProfileSerializer(instance=user_profile, many=False, context={'request': request})
+
+        return Response(serializer.data, status=200)

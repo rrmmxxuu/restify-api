@@ -3,6 +3,9 @@ from ..accounts.models import User
 from ..reservations.models import Reservation
 from ..properties.models import Property
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 # Create your models here.
 
 
@@ -23,5 +26,19 @@ class Comments(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
+
+
+@receiver(post_save, sender=Comments)
+def update_property_rating(sender, instance, **kwargs):
+    property = instance.property
+    related_comments = Comments.objects.filter(property=property)
+
+    total_rating = sum(comment.rating for comment in related_comments if comment.rating)
+    total_rated_comments = sum(1 for comment in related_comments if comment.rating)
+    average_rating = total_rating / total_rated_comments if total_rated_comments > 0 else 0
+
+    property.rating = average_rating
+    property.save()
+
 
 

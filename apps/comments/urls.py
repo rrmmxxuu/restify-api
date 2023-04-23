@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CommentsDetails, CommentCreate, CommentUD, PropertyComments
+from .views import CommentsDetails, CommentCreate, CommentUD, PropertyComments, getOneComment
 
 app_name = 'comments'
 urlpatterns = [
@@ -7,5 +7,6 @@ urlpatterns = [
     path('create/<int:reservation_id>', CommentCreate.as_view(), name='comment_create'),
     path('UD/<int:comment_id>', CommentUD.as_view(), name='comment_UD'),
     path('property/<int:property_id>', PropertyComments.as_view(), name='property_comments'),
+    path('get/<int:comment_id>', getOneComment.as_view(), name="get_comment"),
 
 ]
