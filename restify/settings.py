@@ -216,10 +216,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 CLOUDRUN_SERVICE_URLS = [
     "https://restify-react-rtqaemum5q-uc.a.run.app",
     "https://restify.icu/",
+    "https://restify-api-rtqaemum5q-uc.a.run.app",
 ]
 
-
-ALLOWED_HOSTS = ["https://restify-api-rtqaemum5q-uc.a.run.app",]
+ALLOWED_HOSTS = [urlparse(url).netloc for url in CLOUDRUN_SERVICE_URLS]
 
 CSRF_TRUSTED_ORIGINS = CLOUDRUN_SERVICE_URLS
 
