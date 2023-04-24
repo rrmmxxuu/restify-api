@@ -15,6 +15,7 @@ import dj_database_url
 import environ
 import google.auth
 
+from datetime import timedelta
 from urllib.parse import urlparse
 from pathlib import Path
 from google.oauth2 import service_account
@@ -27,29 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# def get_secret(project_id, secret_name):
-#     client = secretmanager.SecretManagerServiceClient()
-#     secret_version_name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
-#     response = client.access_secret_version(request={"name": secret_version_name})
-#     return response.payload.data.decode("utf-8")
-
-# def parse_secret(secret_value):
-#     lines = secret_value.strip().split("\n")
-#     env_vars = {}
-#     for line in lines:
-#         if line:
-#             key, value = line.split("=", 1)
-#             env_vars[key] = value
-#     return env_vars
-
-# PROJECT_ID = "restify-382711"
-# SECRET_NAME = "django_settings"
-# secret_value = get_secret(PROJECT_ID, SECRET_NAME)
-# env_vars = parse_secret(secret_value)
-# secret_value = get_secret(project_id, secret_id, version_id)
-# print("Secret value:", secret_value)  # Add this line
-# env_vars = parse_secret(secret_value)
-# print("Parsed environment variables:", env_vars)  # Add this line
+# ENV settings
 
 env = environ.Env(DEBUG=(bool, True))
 env_file = os.path.join(BASE_DIR, ".env")
@@ -73,7 +52,7 @@ elif os.getenv("TRAMPOLINE_CI", None):
         f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}"
     )
     env.read_env(io.StringIO(placeholder))
-# [END_EXCLUDE]
+
 elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     # Pull secrets from Secret Manager
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
@@ -83,9 +62,6 @@ elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
-    print("Contents of the environment variables from Secret Manager:")
-    print(payload)
-
     env.read_env(io.StringIO(payload))
 
 else:
@@ -94,22 +70,18 @@ else:
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-zd-ii!&3!ubnt*iiu+##=g4_k#=c-1f4^9%0%+2!j05o2x_@-)'
-
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
-# Custom settings
 AUTH_USER_MODEL = 'accounts.User'
+
+# Databases & File Storages
+
+DATABASES = {'default': env.db()}
+STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-DATABASES = {'default': env.db()}
-
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 client = storage.Client()
 GS_PROJECT_ID = client.project
@@ -129,10 +101,9 @@ REST_FRAMEWORK = {
     ),
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
@@ -228,32 +199,33 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'US/Eastern'
 
 USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
-# Use 'X-Forwarded-Proto' header for determining the scheme (http or https)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# CORS Settings
 
-# Set 'secure' flag on session cookies
+CLOUDRUN_SERVICE_URLS = [
+    "https://restify-react-rtqaemum5q-uc.a.run.app",
+    "https://restify.icu/",
+]
+
+ALLOWED_HOSTS = [urlparse(url).netloc for url in CLOUDRUN_SERVICE_URLS]
+
+CSRF_TRUSTED_ORIGINS = CLOUDRUN_SERVICE_URLS
+
+SECURE_SSL_REDIRECT = True
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SESSION_COOKIE_SECURE = True
 
-# Set 'secure' flag on CSRF cookies
 CSRF_COOKIE_SECURE = True

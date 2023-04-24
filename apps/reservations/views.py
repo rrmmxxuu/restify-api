@@ -9,6 +9,7 @@ from rest_framework_simplejwt import authentication
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from datetime import datetime
 
 
 # Create your views here.
@@ -187,4 +188,15 @@ class ReservationGetMyView(APIView):
         reservation_queryset = Reservation.objects.filter(tenant=tenant)
         serializer = ReservationSerializer(instance=reservation_queryset, many=True, context={'request': request})
         return Response(serializer.data, status=200)
+
+
+class ReservationAutoUpdateView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        updated_rows = Reservation.objects.filter(
+            end_date__lt=datetime.now(), status='Approved'
+        ).update(status='Completed')
+
+        return Response({"updated_reservations": updated_rows})
 
