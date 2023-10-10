@@ -21,7 +21,6 @@ from pathlib import Path
 from google.oauth2 import service_account
 from google.cloud import storage
 from google.cloud import secretmanager
-from rest_framework.utils import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -63,11 +62,6 @@ elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
-    rds_name = "RDS_Connection"
-    rds_secret_payload = client.access_secret_version(
-        name=f"projects/{project_id}/secrets/{rds_name}/versions/latest").payload.data.decode("UTF-8")
-    rds_credentials = json.loads(rds_secret_payload)
-
     env.read_env(io.StringIO(payload))
 
 else:
@@ -84,16 +78,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Databases & File Storages
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': rds_credentials["DBNAME"],
-        'USER': rds_credentials["USER"],
-        'PASSWORD': rds_credentials["PASSWORD"],
-        'HOST': rds_credentials["HOST"],
-        'PORT': rds_credentials["PORT"],
-    }
-}
+DATABASES = {'default': env.db()}
 STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
